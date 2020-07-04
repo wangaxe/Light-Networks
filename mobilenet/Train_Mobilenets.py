@@ -143,9 +143,6 @@ def main():
     torch.save(model.state_dict(), os.path.join(args.out_dir, f'{args.fname}.pth'))
 
     # Evaluation
-    # model_test = mobilenetV1(num_classes=10).to(device)
-    # model_test.load_state_dict(model.state_dict())
-    # model_test.float()
     test_acc, test_loss = evaluation(test_loader, model, device)
     logger.info('Test Loss \t Test Acc')
     logger.info('{:.4f} \t\t {:.4f}'.format(test_loss, test_acc))
