@@ -67,12 +67,12 @@ def evaluation(data_loader, model, device):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch-size', default=128, type=int)
-    parser.add_argument('--data-dir', default='/mnt/storage0_8/torch_datasets/cifar-data/', type=str)
-    parser.add_argument('--epochs', default=40, type=int)
+    parser.add_argument('--batch-size', default=128, type=int) # /mnt/storage0_8/torch_datasets/cifar-data/
+    parser.add_argument('--data-dir', default='../../datasets/cifar-data', type=str)
+    parser.add_argument('--epochs', default=10, type=int)
     parser.add_argument('--lr-schedule', default='cyclic', type=str, choices=['cyclic', 'flat'])
-    parser.add_argument('--lr-min', default=0.01, type=float)
-    parser.add_argument('--lr-max', default=0.01, type=float)
+    parser.add_argument('--lr-min', default=0.0, type=float)
+    parser.add_argument('--lr-max', default=0.05, type=float)
     parser.add_argument('--weight-decay', default=5e-4, type=float)
     parser.add_argument('--momentum', default=0.9, type=float)
     parser.add_argument('--valid-size', default=0.1, type=float)
@@ -102,13 +102,13 @@ def main():
     train_loader, valid_loader, test_loader = load_CIFAR10(
                 args.data_dir, args.batch_size, args.valid_size, args.seed)
     model = mobilenetV1(num_classes=10).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr_max,
-    #                         momentum=args.momentum, weight_decay=args.weight_decay)
-    # lr_steps = args.epochs * len(train_loader)
-    # scheduler = CyclicLR(optimizer, base_lr=args.lr_min, max_lr=args.lr_max,
-    #         step_size_up=lr_steps / 2, step_size_down=lr_steps / 2)
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
-    scheduler = StepLR(optimizer, step_size=20, gamma=0.1)
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr_max,
+                            momentum=args.momentum, weight_decay=args.weight_decay)
+    lr_steps = args.epochs * len(train_loader)
+    scheduler = CyclicLR(optimizer, base_lr=args.lr_min, max_lr=args.lr_max,
+            step_size_up=lr_steps / 2, step_size_down=lr_steps / 2)
+    # optimizer = optim.Adam(model.parameters(), lr=args.lr_max)
+    # scheduler = StepLR(optimizer, step_size=20, gamma=0.1)
     criterion = nn.CrossEntropyLoss()
     # Training
     logger.info('Epoch \t Seconds \t LR \t Train Loss \t Train Acc \t Valid Loss \t Valid Acc')
@@ -146,7 +146,7 @@ def main():
     # model_test = mobilenetV1(num_classes=10).to(device)
     # model_test.load_state_dict(model.state_dict())
     # model_test.float()
-    test_acc, test_loss = evaluation(test_loader, model_test, device)
+    test_acc, test_loss = evaluation(test_loader, model, device)
     logger.info('Test Loss \t Test Acc')
     logger.info('{:.4f} \t\t {:.4f}'.format(test_loss, test_acc))
 
