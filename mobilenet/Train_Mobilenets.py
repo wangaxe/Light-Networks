@@ -12,7 +12,7 @@ from torch.optim.lr_scheduler import CyclicLR,StepLR
 from torchvision import datasets, transforms
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from mobilenets import mobilenetV1
+from mobilenets import mobilenetV1,mobilenetV3_small
 
 
 def load_CIFAR10(_dir, batch_size, valid_size, seed):
@@ -68,7 +68,7 @@ def evaluation(data_loader, model, device):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch-size', default=128, type=int) # ../../datasets/cifar-data
-    parser.add_argument('--data-dir', default='/mnt/storage0_8/torch_datasets/cifar-data/', type=str)
+    parser.add_argument('--data-dir', default='/mnt/storage0_8/torch_datasets/cifar-data/', type=str) # ../../datasets/cifar-data
     parser.add_argument('--epochs', default=10, type=int)
     parser.add_argument('--lr-schedule', default='cyclic', type=str, choices=['cyclic', 'flat'])
     parser.add_argument('--lr-min', default=0.0, type=float)
@@ -78,6 +78,7 @@ def get_args():
     parser.add_argument('--valid-size', default=0.1, type=float)
     parser.add_argument('--device-id', default=0, type=int)
     parser.add_argument('--fname', default='test', type=str)
+    parser.add_argument('--model-version', default='v3-small', type=str, choices=['v1', 'v3-small'])
     parser.add_argument('--out-dir', default='output', type=str, help='Output directory')
     parser.add_argument('--seed', default=0, type=int)
     return parser.parse_args()
@@ -101,14 +102,18 @@ def main():
 
     train_loader, valid_loader, test_loader = load_CIFAR10(
                 args.data_dir, args.batch_size, args.valid_size, args.seed)
-    model = mobilenetV1(num_classes=10).to(device)
+    if args.model_version == 'v1':
+        model = mobilenetV1(num_classes=10).to(device)
+    elif args.model_version == 'v3-small':
+        model = mobilenetV3_small(num_classes=10).to(device)
+    else:
+        raise('Unsupported model!')
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr_max,
                             momentum=args.momentum, weight_decay=args.weight_decay)
     lr_steps = args.epochs * len(train_loader)
     scheduler = CyclicLR(optimizer, base_lr=args.lr_min, max_lr=args.lr_max,
             step_size_up=lr_steps / 2, step_size_down=lr_steps / 2)
-    # optimizer = optim.Adam(model.parameters(), lr=args.lr_max)
-    # scheduler = StepLR(optimizer, step_size=20, gamma=0.1)
+
     criterion = nn.CrossEntropyLoss()
     # Training
     logger.info('Epoch \t Seconds \t LR \t Train Loss \t Train Acc \t Valid Loss \t Valid Acc')
