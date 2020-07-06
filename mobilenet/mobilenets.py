@@ -8,7 +8,7 @@ from torch.nn import init
 
 class dw_conv(nn.Module):
     def __init__(self, in_dim, out_dim, stride):
-        super(dw_conv, self).__init__()
+        super().__init__()
         self.dw_conv_k3 = nn.Conv2d(in_dim, out_dim, kernel_size=3,
         stride=stride, groups=in_dim, padding=(1,1), bias=False)
         self.bn = nn.BatchNorm2d(out_dim)
@@ -22,7 +22,7 @@ class dw_conv(nn.Module):
 
 class point_conv(nn.Module):
     def __init__(self, in_dim, out_dim):
-        super(point_conv, self).__init__()
+        super().__init__()
         self.p_conv_k1 = nn.Conv2d(in_dim, out_dim, kernel_size=1, bias=False)
         self.bn = nn.BatchNorm2d(out_dim)
         self.relu = nn.ReLU(inplace=True)
@@ -40,7 +40,7 @@ class MobileNetsV1(nn.Module):
         Average pooling layer.
     '''
     def __init__(self, num_classes):
-        super(MobileNetsV1, self).__init__()
+        super().__init__()
         self.num_classes = num_classes
         self.features = nn.Sequential(
                 nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=(1,1)), # output size: 32*32*32
@@ -103,7 +103,7 @@ class hsigmoid(nn.Module):
 
 class SeModule(nn.Module):
     def __init__(self, in_dim, reduction=4):
-        super(SeModule, self).__init__()
+        super().__init__()
         self.se = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
             nn.Conv2d(in_dim, in_dim // reduction, kernel_size=1, stride=1, padding=0,bias=False),
@@ -121,7 +121,7 @@ class Block(nn.Module):
         expand + depthwise + pointwise
     '''
     def __init__(self, kernel_size, in_dim, expand_size, out_dim, active_func, se_module, stride):
-        super(Block, self).__init__()
+        super().__init__()
         self.stride = stride
         self.se = se_module
 
@@ -158,7 +158,7 @@ class MobileNetV3_Small(nn.Module):
         Average pooling layer.
     '''
     def __init__(self, num_classes=10):
-        super(MobileNetV3_Small, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False) # stride: 2 >> 1 output size : 32
         self.bn1 = nn.BatchNorm2d(16)
         self.hs1 = hswish()

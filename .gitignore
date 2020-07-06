@@ -130,3 +130,5 @@ dmypy.json
 
 # mine stuff
 papers/
+.vscode
+*/test.pth

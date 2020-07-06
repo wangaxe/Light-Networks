@@ -67,7 +67,7 @@ def evaluation(data_loader, model, device):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch-size', default=128, type=int) # ../../datasets/cifar-data
+    parser.add_argument('--batch-size', default=128, type=int)
     parser.add_argument('--data-dir', default='/mnt/storage0_8/torch_datasets/cifar-data/', type=str) # ../../datasets/cifar-data
     parser.add_argument('--epochs', default=10, type=int)
     parser.add_argument('--lr-schedule', default='cyclic', type=str, choices=['cyclic', 'flat'])
