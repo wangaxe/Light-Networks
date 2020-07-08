@@ -79,3 +79,123 @@ class ShuffleNetUnit(nn.Module):
             stride = stride,
             padding = 1
         )
+
+        self.expand = PointwiseConv2d(
+            int(output_channels / 4),
+            output_channels,
+            groups = groups
+        )
+
+        self.relu = nn.ReLU(inplace=True)
+        self.fusion = self._add
+        self.shortcut = nn.Sequential()
+
+        if stride != 1 or input_channels != output_channels:
+            self.shortcut = nn.AvgPool2d(3, stride=2, padding=1)
+
+            self.expand = PointwiseConv2d(
+                int(output_channels / 4),
+                output_channels - input_channels,
+                groups = groups
+            )
+
+            self.fusion = self._cat
+        
+    def _add(self, x, f):
+        return torch.add(x, y)
+    
+    def _cat(self, x, y):
+        return torch.cat([x,y],dim=1)
+    
+    def forward(self, x)G:
+        shortcut = self.shortcut(x)
+
+        shuffled = self.gp1(x)
+        shuffled = self.channel_shuffle(shuffled)
+        shuffled = self.depthwise(shuffled)
+        shuffled = self.expand(shuffled)
+
+        output = self.fusion(shortcut, shuffled)
+        output = self.relu(output)
+
+        return output
+
+class ShuffleNet(nn.Module):
+
+    def __init__(self, num_blocks, num_class = 10, groups=3):
+        super().__init__()
+
+        if groups == 1:
+            out_channels = [24, 144, 288, 567]
+        elif groups == 2:
+            out_channels = [24, 200, 400, 800]
+        elif groups == 3:
+            out_channels = [24, 240, 480, 960]
+        elif groups == 4:
+            out_channels = [24, 272, 544, 1088]
+        elif groups == 8:
+            out_channels = [24, 384, 768, 1536]
+        
+        self.conv1 = BasicConv2d(3, out_channels[0], 3, padding=1, stride=1)
+        self.input_channels = out_channels[0]
+
+        self.stage2 = self._make_stage(
+            ShuffleNetUnit, 
+            num_blocks[0], 
+            out_channels[1], 
+            stride=2, 
+            stage=2,
+            groups=groups
+        )
+
+        self.stage3 = self._make_stage(
+            ShuffleNetUnit, 
+            num_blocks[1], 
+            out_channels[2], 
+            stride=2,
+            stage=3, 
+            groups=groups
+        )
+
+        self.stage4 = self._make_stage(
+            ShuffleNetUnit,
+            num_blocks[2],
+            out_channels[3],
+            stride=2,
+            stage=4,
+            groups=groups
+        )
+
+        self.avg = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(out_channels[3], num_classes)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.stage2(x)
+        x = self.stage3(x)
+        x = self.stage4(x)
+        x = self.avg(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        return x
+
+def _make_stage(self, block, num_blocks, output_channels, stride, stage, groups):
+
+        strides = [stride] + [1] * (num_blocks - 1)
+        stage = []
+        for stride in strides:
+            stage.append(
+                block(
+                    self.input_channels, 
+                    output_channels, 
+                    stride=stride, 
+                    stage=stage, 
+                    groups=groups
+                )
+            )
+            self.input_channels = output_channels
+
+        return nn.Sequential(*stage)
+
+def shufflenet():
+    return ShuffleNet([4, 8, 4])
