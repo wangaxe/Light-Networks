@@ -196,7 +196,7 @@ class MobileNetV3_Small(nn.Module):
 
 def mobilenetV3_small(num_classes, **kwargs):
     r"""PyTorch implementation of the MobileNets v3 architecture
-    <https://arxiv.org/abs/1704.04861>`_.
+    <https://arxiv.org/abs/1905.02244>`_.
     Model has been modified to work on CIFAR-10
     Args:
         num_classes (int): 10 for CIFAR-10

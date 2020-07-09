@@ -131,4 +131,4 @@ dmypy.json
 # mine stuff
 papers/
 .vscode
-*/test.pth
+test.pth
